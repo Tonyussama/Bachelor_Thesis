@@ -1,0 +1,40 @@
+import cv2
+
+# load the pre-trained model
+model_path = "model-f6b98070.pt"
+net = cv2.dnn.readNet(model_path)
+
+# set the preferred size of the input image
+height, width = 384, 384
+
+# open the camera
+cap = cv2.VideoCapture(0)
+
+while True:
+    # read the next frame from the camera
+    ret, frame = cap.read()
+
+    if ret:
+        # resize the input frame
+        resized = cv2.resize(frame, (width, height))
+
+        # normalize the input frame
+        input_blob = cv2.dnn.blobFromImage(resized, scalefactor=1.0 / 255, size=(width, height), mean=(0.485, 0.456, 0.406), swapRB=True)
+
+        # pass the input blob through the network to get the estimated depth map
+        net.setInput(input_blob)
+        output = net.forward()
+
+        # rescale the depth map to the original frame resolution
+        depthmap = cv2.resize(output[0, 0], (frame.shape[1], frame.shape[0]))
+
+        # display the estimated depth map
+        cv2.imshow("Depth Map", depthmap)
+
+    # press 'q' to quit
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+# release the camera and close all windows
+cap.release()
+cv2.destroyAllWindows()

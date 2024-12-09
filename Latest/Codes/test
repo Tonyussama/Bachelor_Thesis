@@ -1,0 +1,81 @@
+import cv2
+import numpy as np
+url = 'rtsp://admin:Tony2299@192.168.1.110/cam/realmonitor?channel=1&subtype=00&authbasic=YWRtaW46YWRtaW4='
+cap = cv2.VideoCapture(url)
+url2 = 'rtsp://admin:Tony0000@192.168.1.108/cam/realmonitor?channel=1&subtype=00&authbasic=YWRtaW46YWRtaW4='
+cap2 = cv2.VideoCapture(url2)
+cap.set(3, 1280)
+cap.set(4, 720)
+cap.set(cv2.CAP_PROP_FPS, 70)
+#cap2.set(3, 1280)
+#cap2.set(4, 720)
+#cap2.set(cv2.CAP_PROP_FPS, 70)
+
+classNames = []
+classFile = 'coco.names'
+with open(classFile, 'rt') as f:
+    classNames = f.read().rstrip('\n').split('\n')
+configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+weightsPath = 'frozen_inference_graph.pb'
+
+
+net = cv2.dnn_DetectionModel(weightsPath, configPath)
+net.setInputSize(320, 320)
+net.setInputScale(1.0 / 127.5)
+net.setInputMean((127.5, 127.5, 127.5))
+net.setInputSwapRB(True)
+
+while True:
+    success, img = cap.read()
+    success2, img2 = cap2.read()
+    classIds, confs, bbox = net.detect(img, confThreshold=0.6)
+    # if classNames[classIds] == "person":
+    # print(classIds)
+    x = [1]
+    count = 1
+
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # detector = cv2.CascadeClassifier("haarcascade_frontalface.xml")
+    # rects = detector.detectMultiScale(gray, scaleFactor=1.05,
+    # minNeighbors=5, minSize=(30, 30),
+    # flags=cv2.CASCADE_SCALE_IMAGE)
+
+    if len(classIds) != 0:
+        for classId, confidence, border in zip(classIds.flatten(), confs.flatten(), bbox):
+            if classNames[classId - 1] == "person":
+                cv2.rectangle(img, border, color=(0, 255, 0), thickness=2)
+                cv2.putText(img, "This is a "+classNames[classId - 1].upper(), (border[0] + 10, border[1] + 30),
+                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+                cv2.rectangle(img2, border, color=(0, 255, 0), thickness=2)
+                cv2.putText(img2, "This is a "+classNames[classId - 1].upper(), (border[0] + 10, border[1] + 30),
+                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+                # cv2.putText(img, "accuracy ="+str(round(confidence * 100, 2))+"%", (border[0] + 10, border[1] + 60),
+                # cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 255, 255), 2)
+                index = np.where(classIds != 1)
+                classIds = np.delete(classIds, index)
+                #cv2.putText(img, "Counter = " + str(len(classIds)), (00, 50),
+                            #cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+                cv2.putText(img2, "Counter = " + str(len(classIds)), (00, 50),
+                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+                # print(border)
+
+                if len(border) != 0:
+                    x = (border[0])
+                    y = (border[1])
+                    w = (border[2])
+                    h = (border[3])
+                    cx, cy = int((2*x + w) / 2), int((2*y + h) / 2)
+                    #cv2.circle(img, (cx, cy), 5, (0, 0, 255), -1)
+                    #print("person" + str(count))
+                    print(cx, cy)
+                    count = count + 1
+
+    cv2.imshow("Output", img)
+    cv2.imshow("Output2", img2)
+    if cv2.waitKey(1) & 0xFF == ord('c'):
+        break
+
+   # while x!=0:
+    # if (classIds[x] == "person"):
+       # count = count+1
+       # x=x-1

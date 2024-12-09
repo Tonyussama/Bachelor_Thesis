@@ -1,0 +1,38 @@
+import cv2
+import numpy as np
+
+# Set the size of the image
+img_size = (500, 500)
+
+# Set the number of rows and columns
+rows = 10
+cols = 10
+
+# Calculate the spacing between the lines
+spacing = img_size[0] // cols
+
+# Create a black image
+img = np.zeros((img_size[0], img_size[1], 3), dtype=np.uint8)
+
+# Loop through the rows and columns and draw the grid lines
+for i in range(rows + 1):
+    y = i * spacing
+    cv2.line(img, (0, y), (img_size[1], y), (255, 255, 255), 1)
+for i in range(cols + 1):
+    x = i * spacing
+    cv2.line(img, (x, 0), (x, img_size[0]), (255, 255, 255), 1)
+
+# Loop through the rows and columns and write the intersection numbers
+num = 1
+for i in range(rows):
+    y = i * spacing + spacing // 2
+    for j in range(cols):
+        x = j * spacing + spacing // 2
+        cv2.putText(img, str(num), (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), )
+        num += 1
+
+# Display the grid plane image with intersection numbers
+cv2.imshow("Grid Plane with Intersection Numbers", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
