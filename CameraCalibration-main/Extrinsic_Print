@@ -1,0 +1,14 @@
+import cv2
+import numpy as np
+
+# Load extrinsic camera parameters from file
+fs = cv2.FileStorage('extrinsics.yml', cv2.FILE_STORAGE_READ)
+R = fs.getNode('R_0').mat()
+t = fs.getNode('t_0').mat()
+fs.release()
+
+# Print the loaded parameters
+print('Rotation matrix R:')
+print(R)
+print('Translation vector t:')
+print(t)

@@ -1,0 +1,14 @@
+import cv2
+import numpy as np
+
+# Load intrinsic camera parameters from file
+fs = cv2.FileStorage('intrinsics.yml', cv2.FILE_STORAGE_READ)
+K = fs.getNode('K').mat()
+dist_coeffs = fs.getNode('dist_coeffs').mat()
+fs.release()
+
+# Print the loaded parameters
+print('Intrinsic camera matrix K:')
+print(K)
+print('Distortion coefficients:')
+print(dist_coeffs)
